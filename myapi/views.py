@@ -8,12 +8,19 @@ from rest_framework import status
 class PredictView(APIView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # تحميل النموذج المدرب
-        self.model = tf.keras.models.load_model(r'trained_model.h5')
+        try:
+            # تحميل النموذج المدرب
+            self.model = tf.keras.models.load_model(r'C:\Users\USERR\Desktop\drive-download-20250313T012831Z-001\trained_model.h5')
+            print("Model loaded successfully.")
+        except Exception as e:
+            print(f"Error loading model: {e}")
 
     def post(self, request):
         try:
             # الحصول على الصورة من الطلب
+            if 'file' not in request.FILES:
+                return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
+            
             file = request.FILES['file']
             image = Image.open(file)
             image = image.resize((128, 128))  # تغيير الحجم بما يتناسب مع نموذجك
@@ -44,4 +51,5 @@ class PredictView(APIView):
             return Response({"prediction": class_names[result_index]})
         
         except Exception as e:
+            print(f"Error in prediction: {e}")
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
